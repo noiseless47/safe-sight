@@ -1,0 +1,21 @@
+# Upstream SentinelVision lab-safety YOLO class profile.
+# Dataset root expected at data/ppe_lab from the project root.
+
+path: data/ppe_lab
+train: images/train
+val: images/val
+test: images/test
+
+names:
+  0: Drinking
+  1: Eating
+  2: Gloves
+  3: Googles
+  4: Head Mask
+  5: Lab Coat
+  6: Mask
+  7: No Gloves
+  8: No Head Mask
+  9: No Lab coat
+  10: No Mask
+  11: No googles

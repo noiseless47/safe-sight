@@ -1,0 +1,63 @@
+[project]
+name = "backend"
+version = "0.1.0"
+description = "Lab Safety Monitoring System Backend"
+readme = "README.md"
+requires-python = ">=3.11,<3.13"
+dependencies = [
+    "aiosqlite>=0.22.1",
+    "fastapi>=0.128.0",
+    "filterpy>=1.4.5",
+    "onnxruntime-gpu>=1.20.1",
+    "opencv-python>=4.12.0.88",
+    "pydantic-settings>=2.7.0",
+    "pydantic>=2.10.0",
+    "python-multipart>=0.0.21",
+    "scipy>=1.13.0",
+    "sqlalchemy>=2.0.36",
+    # Install PyTorch through scripts/install_backend_gpu.ps1 so CUDA wheels match the GPU host.
+    "torch>=2.11.0",
+    "torchvision>=0.27.0",
+    "torchaudio>=2.11.0",
+    "uvicorn[standard]>=0.32.0",
+    "websockets>=13.0",
+    "wsproto>=1.2.0",
+    "requests>=2.32.0",
+    "tqdm>=4.66.0",
+    # ML Models
+    "ultralytics>=8.4.0",
+    "insightface>=0.7.3",
+    "huggingface-hub>=0.26.0",
+    "transformers>=4.57.0",
+    "accelerate>=1.12.0",
+    "modelscope>=1.18.0",
+    "sam3>=0.1.2",
+    "hf-xet>=1.2.0",
+]
+
+[project.optional-dependencies]
+sam2 = [
+    # SAM 2 from GitHub (installed via uv sync --extra sam2)
+    # Note: Package name in repo is 'sam-2' (with hyphen)
+    "sam-2 @ git+https://github.com/facebookresearch/sam2.git",
+]
+
+[build-system]
+requires = ["setuptools>=70", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["app*"]
+exclude = ["configs*", "weights*", "runs*"]
+
+# PyTorch CUDA configuration for uv users. The PowerShell installer is the primary path on Windows.
+[[tool.uv.index]]
+name = "pytorch-cu130"
+url = "https://download.pytorch.org/whl/cu130"
+explicit = true
+
+[tool.uv.sources]
+torch = { index = "pytorch-cu130", marker = "sys_platform == 'linux' or sys_platform == 'win32'" }
+torchvision = { index = "pytorch-cu130", marker = "sys_platform == 'linux' or sys_platform == 'win32'" }
+torchaudio = { index = "pytorch-cu130", marker = "sys_platform == 'linux' or sys_platform == 'win32'" }
