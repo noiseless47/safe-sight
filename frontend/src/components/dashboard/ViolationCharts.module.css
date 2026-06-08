@@ -1,19 +1,48 @@
 .container {
   display: flex;
   flex-direction: column;
-  height: 100%;
+  min-height: 320px;
 }
 
 .header {
-  padding: 16px;
+  padding: 20px 20px 16px;
   border-bottom: 1px solid var(--border-color);
-  font-family: var(--font-display);
-  font-weight: 600;
-  font-size: 1.125rem;
+  font-size: 1.08rem;
+  font-weight: 800;
 }
 
 .chartContent {
   flex: 1;
-  padding: 24px 16px 16px 16px;
-  min-height: 250px;
+  min-height: 260px;
+  padding: 24px 18px 18px;
+}
+
+.emptyState {
+  height: 100%;
+  min-height: 220px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+  text-align: center;
+}
+
+.tooltip {
+  padding: 9px 12px;
+  border-radius: 8px;
+  background: #ffffff;
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-md);
+  color: var(--text-primary);
+}
+
+.tooltipTitle {
+  margin: 0 0 3px;
+  font-weight: 800;
+}
+
+.tooltipValue {
+  margin: 0;
+  color: var(--status-danger);
+  font-weight: 750;
 }

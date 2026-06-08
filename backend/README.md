@@ -1,5 +1,5 @@
-# SentinelVision Backend
+# SafeSight Backend
 
-FastAPI backend for the SentinelVision PPE safety system.
+FastAPI backend for the SafeSight PPE safety system.
 
 Use the root `README.md` for setup and operation instructions.

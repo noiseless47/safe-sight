@@ -5,6 +5,16 @@ import { fetchViolationsByPpe, PpeViolation } from '@/lib/api';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import styles from './ViolationCharts.module.css';
 
+type TooltipPayload = {
+  value: number;
+};
+
+type CustomTooltipProps = {
+  active?: boolean;
+  payload?: TooltipPayload[];
+  label?: string;
+};
+
 export default function ViolationCharts() {
   const [data, setData] = useState<PpeViolation[]>([]);
 
@@ -20,12 +30,12 @@ export default function ViolationCharts() {
     loadData();
   }, []);
 
-  const CustomTooltip = ({ active, payload, label }: any) => {
+  const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) => {
     if (active && payload && payload.length) {
       return (
-        <div style={{ background: 'var(--bg-panel)', border: '1px solid var(--border-color)', padding: '8px 12px', borderRadius: '8px', color: 'var(--text-primary)' }}>
-          <p style={{ margin: 0, fontWeight: 600 }}>{label}</p>
-          <p style={{ margin: 0, color: 'var(--status-danger)' }}>{payload[0].value} missing</p>
+        <div className={styles.tooltip}>
+          <p className={styles.tooltipTitle}>{label}</p>
+          <p className={styles.tooltipValue}>{payload[0].value} missing</p>
         </div>
       );
     }
@@ -39,11 +49,11 @@ export default function ViolationCharts() {
       </div>
       <div className={styles.chartContent}>
         {data.length === 0 ? (
-          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%', color: 'var(--text-secondary)' }}>
+          <div className={styles.emptyState}>
             No violation data available
           </div>
         ) : (
-          <ResponsiveContainer width="100%" height="100%">
+          <ResponsiveContainer width="100%" height={240}>
             <BarChart data={data} layout="vertical" margin={{ top: 0, right: 0, left: 30, bottom: 0 }}>
               <XAxis type="number" hide />
               <YAxis 
@@ -51,12 +61,12 @@ export default function ViolationCharts() {
                 type="category" 
                 axisLine={false} 
                 tickLine={false}
-                tick={{ fill: 'var(--text-secondary)', fontSize: 12 }}
+                tick={{ fill: 'var(--text-secondary)', fontSize: 12, fontWeight: 700 }}
               />
-              <Tooltip cursor={{ fill: 'rgba(255, 255, 255, 0.05)' }} content={<CustomTooltip />} />
+              <Tooltip cursor={{ fill: 'rgba(219, 39, 119, 0.06)' }} content={<CustomTooltip />} />
               <Bar dataKey="count" radius={[0, 4, 4, 0]}>
                 {data.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill="var(--status-danger)" fillOpacity={0.8} />
+                  <Cell key={`cell-${index}`} fill="var(--accent-pink)" fillOpacity={0.82} />
                 ))}
               </Bar>
             </BarChart>

@@ -1,8 +1,8 @@
-# SentinelVision PPE Safety
+# SafeSight PPE Safety
 
 GPU-ready PPE compliance monitoring for CCTV/video streams.
 
-This active workspace now uses the downloaded SentinelVision-style codebase as the main project. The previous SafeSight work was not permanently destroyed; it was moved to `_retired/safesight_20260604-172036` so the active root stays clean while still being recoverable.
+This active workspace uses the SafeSight project structure as the main project. Earlier experimental work was moved to `_retired/safesight_20260604-172036` so the active root stays clean while still being recoverable.
 
 ## Current Direction
 

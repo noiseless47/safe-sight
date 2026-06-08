@@ -127,6 +127,13 @@ class VideoProcessingManager:
         """List all jobs."""
         return [convert_numpy_types(job) for job in self.jobs.values()]
 
+    def find_active_job(self) -> Optional[Dict[str, Any]]:
+        """Return the newest active video processing job, if one exists."""
+        for job in reversed(list(self.jobs.values())):
+            if job.get("status") in self.ACTIVE_STATUSES:
+                return convert_numpy_types(job)
+        return None
+
     def find_active_job_for_video(self, video_path: str) -> Optional[Dict[str, Any]]:
         """Return an active job for the same resolved video path, if one exists."""
         resolved_path = str(Path(video_path).resolve())
@@ -190,6 +197,17 @@ async def start_video_processing(
             "video_path": str(path),
             "reused": True,
         }
+
+    other_active_job = processing_manager.find_active_job()
+    if other_active_job:
+        raise HTTPException(
+            status_code=409,
+            detail=(
+                f"Another analysis is already running for "
+                f"{other_active_job.get('filename', 'a video')}. "
+                "Wait for it to finish before starting a new video."
+            ),
+        )
 
     # Create processing job
     job_id = processing_manager.create_job(str(path), path.name)
@@ -400,7 +418,9 @@ async def delete_video(filename: str):
 async def get_processing_status():
     """Get overall processing status."""
     active_jobs = [
-        j for j in processing_manager.list_jobs() if j["status"] == "processing"
+        j
+        for j in processing_manager.list_jobs()
+        if j["status"] in processing_manager.ACTIVE_STATUSES
     ]
     return {
         "active_jobs": len(active_jobs),

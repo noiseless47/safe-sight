@@ -1,4 +1,4 @@
-# Upstream SentinelVision lab-safety YOLO class profile.
+# Legacy lab-safety YOLO class profile.
 # Dataset root expected at data/ppe_lab from the project root.
 
 path: data/ppe_lab

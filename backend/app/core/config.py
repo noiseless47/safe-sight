@@ -10,7 +10,7 @@ class Settings(BaseSettings):
     """Application settings with environment variable support."""
 
     # App settings
-    APP_NAME: str = "SentinelVision PPE Safety"
+    APP_NAME: str = "SafeSight PPE Safety"
     DEBUG: bool = True
 
     # API Settings
@@ -20,7 +20,7 @@ class Settings(BaseSettings):
     )
 
     # Database
-    DATABASE_URL: str = "sqlite+aiosqlite:///./sentinelvision.db"
+    DATABASE_URL: str = "sqlite+aiosqlite:///./safesight.db"
     SQLALCHEMY_ECHO: bool = Field(default=False)
 
     # Detector settings

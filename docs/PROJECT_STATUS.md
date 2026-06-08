@@ -3,7 +3,7 @@
 ## Done
 
 - Previous SafeSight implementation archived under `_retired/safesight_20260604-172036`.
-- Downloaded SentinelVision code promoted into the active project root.
+- Downloaded PPE safety code promoted into the active SafeSight project root.
 - Frontend demo fixtures, demo videos, and simulated query paths removed.
 - Backend mock detections disabled by default.
 - PPE detector now supports explicit `construction` and `lab` class profiles.

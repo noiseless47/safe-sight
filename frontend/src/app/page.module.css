@@ -1,70 +1,124 @@
 .layout {
-  display: flex;
   min-height: 100vh;
 }
 
 .main {
-  margin-left: 280px;
-  flex: 1;
-  padding: 2rem 2.5rem;
-  max-width: 1600px;
+  width: min(100%, 1480px);
+  margin: 0 auto;
+  padding: 32px 28px 48px;
 }
 
 .header {
-  display: flex;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 24px;
+  align-items: start;
+  margin-bottom: 28px;
+}
+
+.eyebrow {
+  display: inline-flex;
   align-items: center;
-  margin-bottom: 2rem;
+  gap: 8px;
+  margin-bottom: 12px;
+  padding: 7px 12px;
+  border-radius: 999px;
+  background: var(--accent-pink-soft);
+  color: var(--accent-pink);
+  font-size: 0.86rem;
+  font-weight: 750;
+}
+
+.eyebrowDot {
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: currentColor;
 }
 
 .title {
-  font-size: 2rem;
-  font-weight: 700;
+  margin-bottom: 8px;
   color: var(--text-primary);
-  margin-bottom: 4px;
+  font-size: clamp(2rem, 4vw, 3.35rem);
+  line-height: 1.02;
+  font-weight: 850;
+  max-width: 760px;
+}
+
+.title span {
+  color: var(--accent-pink);
 }
 
 .subtitle {
   color: var(--text-secondary);
-  font-size: 0.95rem;
+  font-size: 1.04rem;
+  line-height: 1.6;
+  max-width: 680px;
+}
+
+.cameraPill {
+  min-height: 40px;
+  padding: 0 15px;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  background: #ffffff;
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-sm);
+  color: var(--text-primary);
+  font-size: 0.9rem;
+  font-weight: 750;
+  white-space: nowrap;
+}
+
+.cameraDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--status-safe);
+  box-shadow: 0 0 0 4px rgba(5, 150, 105, 0.12);
 }
 
 .topRow {
-  margin-bottom: 1.5rem;
+  margin-bottom: 22px;
 }
 
 .mainGrid {
   display: grid;
-  grid-template-columns: 2fr 1fr;
-  gap: 1.5rem;
-  height: 600px;
+  grid-template-columns: minmax(0, 1.8fr) minmax(340px, 0.7fr);
+  gap: 22px;
+  align-items: start;
 }
 
 .leftColumn {
+  min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: 22px;
 }
 
-.videoWrapper {
-  flex: 1;
-}
-
-.chartsWrapper {
-  flex: 1;
-}
-
+.videoWrapper,
 .rightColumn {
-  height: 100%;
+  min-width: 0;
 }
 
-@media (max-width: 1200px) {
+@media (max-width: 1180px) {
   .mainGrid {
     grid-template-columns: 1fr;
-    height: auto;
   }
-  
-  .leftColumn {
-    height: auto;
+}
+
+@media (max-width: 760px) {
+  .main {
+    padding: 24px 16px 36px;
+  }
+
+  .header {
+    grid-template-columns: 1fr;
+  }
+
+  .cameraPill {
+    justify-self: start;
   }
 }

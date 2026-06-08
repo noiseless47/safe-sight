@@ -4,7 +4,7 @@ YOLOv11 Detector for PPE Detection
 Uses a trained YOLO model for PPE detection with violation classes.
 Supports two class profiles:
 - construction: Ultralytics Construction-PPE classes
-- lab: upstream SentinelVision lab PPE/action classes
+- lab: legacy lab PPE/action classes
 """
 
 import cv2
@@ -129,7 +129,7 @@ class YOLOv11Detector:
                 set(self.CONSTRUCTION_PERSON_CLASS_IDS),
             )
 
-        if normalized in {"lab", "laboratory", "sentinelvision"}:
+        if normalized in {"lab", "laboratory", "legacy_lab"}:
             return (
                 dict(self.LAB_CLASS_NAMES),
                 dict(self.LAB_CLASS_MAPPING),

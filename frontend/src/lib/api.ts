@@ -1,6 +1,7 @@
-export const API_BASE_URL = 'http://localhost:8000/api';
+export const BACKEND_BASE_URL = 'http://localhost:8000';
+export const API_BASE_URL = `${BACKEND_BASE_URL}/api`;
 export const WS_BASE_URL = 'ws://localhost:8000/api/ws';
-export const VIDEO_STREAM_URL = 'http://localhost:8000/api/stream/live/feed';
+export const VIDEO_STREAM_URL = `${API_BASE_URL}/stream/live/feed`;
 
 export interface SummaryStats {
   total_events: number;
@@ -20,6 +21,17 @@ export interface TimelineData {
 export interface PpeViolation {
   ppe_type: string;
   count: number;
+}
+
+export interface HealthStatus {
+  status: string;
+  ml_ready: boolean;
+  ppe_model_path: string;
+}
+
+export interface StreamStatus {
+  active_jobs: number;
+  total_jobs: number;
 }
 
 export interface ComplianceEvent {
@@ -51,8 +63,12 @@ export interface ProcessingJob {
   progress: number;
   total_frames: number;
   processed_frames: number;
-  events: ComplianceEvent[];
-  violations: ComplianceEvent[];
+  violations_count?: number;
+  persons_count?: number;
+  unique_events?: number;
+  closed_events?: number;
+  events?: ComplianceEvent[];
+  violations?: ComplianceEvent[];
   error?: string | null;
   output_video?: string | null;
 }
@@ -75,6 +91,18 @@ export async function fetchViolationsByPpe(): Promise<PpeViolation[]> {
   return res.json();
 }
 
+export async function fetchHealthStatus(): Promise<HealthStatus> {
+  const res = await fetch(`${BACKEND_BASE_URL}/health`, { cache: 'no-store' });
+  if (!res.ok) throw new Error('Failed to fetch backend health');
+  return res.json();
+}
+
+export async function fetchStreamStatus(): Promise<StreamStatus> {
+  const res = await fetch(`${API_BASE_URL}/stream/status`, { cache: 'no-store' });
+  if (!res.ok) throw new Error('Failed to fetch stream status');
+  return res.json();
+}
+
 export async function fetchRecentEvents(limit: number = 20): Promise<{events: ComplianceEvent[]}> {
   const res = await fetch(`${API_BASE_URL}/events?page=1&page_size=${limit}`, { cache: 'no-store' });
   if (!res.ok) throw new Error('Failed to fetch recent events');
@@ -93,7 +121,16 @@ export async function startVideoProcessing(videoPath: string): Promise<{job_id: 
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ video_path: videoPath }),
   });
-  if (!res.ok) throw new Error('Failed to start video processing');
+  if (!res.ok) {
+    let message = 'Failed to start video processing';
+    try {
+      const errorBody = await res.json();
+      if (typeof errorBody?.detail === 'string') message = errorBody.detail;
+    } catch {
+      // Keep the default message when the server does not return JSON.
+    }
+    throw new Error(message);
+  }
   return res.json();
 }
 
