@@ -1,12 +1,14 @@
 .container {
   width: 100%;
-  overflow: hidden;
+  overflow: visible;
   display: flex;
   flex-direction: column;
-  background: #ffffff;
+  background: var(--bg-panel);
 }
 
 .analysisPanel {
+  position: relative;
+  z-index: 40;
   padding: 16px;
   border-bottom: 1px solid var(--border-color);
   display: flex;
@@ -28,7 +30,7 @@
   gap: 4px;
   border: 1px solid var(--border-color);
   border-radius: 8px;
-  background: var(--bg-panel-soft);
+  background: rgba(255, 255, 255, 0.03);
   padding: 4px;
 }
 
@@ -45,7 +47,7 @@
 
 .segmented button:hover {
   color: var(--accent-pink);
-  background: #ffffff;
+  background: rgba(244, 114, 182, 0.1);
 }
 
 .activeSegment {
@@ -98,7 +100,7 @@
   gap: 7px;
 }
 
-.fieldGroup span {
+.fieldLabel {
   color: var(--text-secondary);
   font-size: 0.78rem;
   font-weight: 850;
@@ -106,27 +108,140 @@
   letter-spacing: 0.07em;
 }
 
-.fieldGroup select {
+.dropdown {
+  position: relative;
+  z-index: 45;
   width: 100%;
-  min-height: 42px;
+}
+
+.dropdownTrigger {
+  width: 100%;
+  min-height: 46px;
   border: 1px solid var(--border-color);
   border-radius: 8px;
-  background: #ffffff;
+  background: var(--bg-panel-strong);
   color: var(--text-primary);
-  padding: 0 12px;
-  font-size: 0.92rem;
-  font-weight: 700;
-  outline: none;
+  padding: 8px 42px 8px 12px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px 12px;
+  align-items: center;
+  text-align: left;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
 }
 
-.fieldGroup select:focus {
-  border-color: rgba(219, 39, 119, 0.45);
-  box-shadow: 0 0 0 3px rgba(219, 39, 119, 0.1);
+.dropdownTrigger:hover:not(:disabled),
+.dropdownTrigger[aria-expanded="true"] {
+  border-color: rgba(244, 114, 182, 0.54);
+  background: #261d2e;
+  box-shadow: 0 0 0 3px rgba(244, 114, 182, 0.12);
 }
 
-.fieldGroup select:disabled {
+.dropdownTrigger:disabled {
   cursor: not-allowed;
-  opacity: 0.6;
+  opacity: 0.58;
+}
+
+.dropdownMain {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.92rem;
+  font-weight: 800;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.dropdownMeta {
+  color: var(--text-secondary);
+  font-size: 0.78rem;
+  font-weight: 800;
+  white-space: nowrap;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.chevron {
+  position: absolute;
+  right: 14px;
+  width: 18px;
+  height: 18px;
+  color: var(--text-secondary);
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transition: transform 0.2s ease;
+}
+
+.dropdownTrigger[aria-expanded="true"] .chevron {
+  transform: rotate(180deg);
+}
+
+.dropdownMenu {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  right: 0;
+  z-index: 60;
+  max-height: 260px;
+  overflow-y: auto;
+  padding: 6px;
+  border: 1px solid var(--border-strong);
+  border-radius: 8px;
+  background: #17121d;
+  box-shadow: 0 20px 44px rgba(0, 0, 0, 0.46);
+}
+
+.dropdownOption {
+  width: 100%;
+  min-height: 42px;
+  padding: 9px 10px;
+  border-radius: 7px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  background: transparent;
+  color: var(--text-primary);
+  text-align: left;
+  transition: background 0.16s ease, color 0.16s ease;
+}
+
+.dropdownOption:hover,
+.selectedOption {
+  background: var(--accent-pink-soft);
+}
+
+.dropdownOption span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.88rem;
+  font-weight: 780;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.dropdownOption strong {
+  color: var(--text-secondary);
+  font-size: 0.76rem;
+  font-weight: 850;
+  white-space: nowrap;
+}
+
+.selectedOption span {
+  color: var(--accent-pink);
+}
+
+.fieldHint {
+  color: var(--status-danger);
+  font-size: 0.78rem;
+  font-weight: 750;
 }
 
 .runButton {
@@ -176,7 +291,7 @@
   padding: 12px;
   border: 1px solid var(--border-color);
   border-radius: 8px;
-  background: var(--bg-panel-soft);
+  background: rgba(255, 255, 255, 0.03);
 }
 
 .failedStrip {
@@ -209,7 +324,7 @@
 .progressTrack {
   height: 8px;
   border-radius: 999px;
-  background: #e5e7eb;
+  background: rgba(255, 255, 255, 0.1);
   overflow: hidden;
 }
 
@@ -229,64 +344,6 @@
   color: var(--text-secondary);
   font-size: 0.9rem;
   font-weight: 650;
-}
-
-.videoStage {
-  position: relative;
-  width: 100%;
-  aspect-ratio: 16 / 9;
-  background: #0f172a;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.videoFeed {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.overlay {
-  position: absolute;
-  top: 16px;
-  left: 16px;
-  z-index: 2;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  background: rgba(17, 24, 39, 0.7);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  padding: 7px 12px;
-  border-radius: 999px;
-  color: #ffffff;
-  font-size: 0.82rem;
-  font-weight: 850;
-  border: 1px solid rgba(255, 255, 255, 0.14);
-}
-
-.recDot {
-  width: 8px;
-  height: 8px;
-  border-radius: 999px;
-  background: #ef4444;
-  box-shadow: 0 0 8px #ef4444;
-  animation: pulse 1.5s infinite;
-}
-
-.offlineMessage {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 12px;
-  color: rgba(255, 255, 255, 0.72);
-}
-
-.offlineIcon {
-  width: 48px;
-  height: 48px;
-  opacity: 0.7;
 }
 
 @media (max-width: 760px) {
@@ -321,12 +378,7 @@
   .jobCopy strong {
     white-space: normal;
   }
-}
 
-@keyframes pulse {
-  0% { opacity: 1; }
-  50% { opacity: 0.35; }
-  100% { opacity: 1; }
 }
 
 @keyframes spin {

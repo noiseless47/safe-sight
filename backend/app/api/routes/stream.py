@@ -7,6 +7,7 @@ import asyncio
 import cv2
 import numpy as np
 import logging
+import subprocess
 from fastapi import (
     APIRouter,
     UploadFile,
@@ -23,6 +24,45 @@ from pydantic import BaseModel
 from ...ml.pipeline import get_pipeline
 
 logger = logging.getLogger(__name__)
+
+
+def make_browser_playable_mp4(video_path: Path) -> Path:
+    """Transcode OpenCV MP4 output to H.264 so browser video playback is reliable."""
+    try:
+        import imageio_ffmpeg
+    except ImportError:
+        logger.warning("imageio-ffmpeg missing; serving OpenCV MP4 output without H.264 transcode")
+        return video_path
+
+    ffmpeg_path = imageio_ffmpeg.get_ffmpeg_exe()
+    transcode_path = video_path.with_name(f"{video_path.stem}_browser.mp4")
+    command = [
+        ffmpeg_path,
+        "-y",
+        "-i",
+        str(video_path),
+        "-an",
+        "-vcodec",
+        "libx264",
+        "-preset",
+        "veryfast",
+        "-pix_fmt",
+        "yuv420p",
+        "-movflags",
+        "+faststart",
+        str(transcode_path),
+    ]
+
+    try:
+        subprocess.run(command, check=True, capture_output=True, text=True)
+        if transcode_path.exists() and transcode_path.stat().st_size > 0:
+            transcode_path.replace(video_path)
+    except Exception as exc:
+        logger.warning("Failed to transcode %s for browser playback: %s", video_path, exc)
+        if transcode_path.exists():
+            transcode_path.unlink()
+
+    return video_path
 
 
 def convert_numpy_types(obj):
@@ -260,7 +300,7 @@ async def process_video_task(job_id: str, video_path: str):
     output_filename = f"{input_filename}_annotated_{job_id[:8]}.mp4"
     output_path = output_dir / output_filename
 
-    # Use mp4v codec for compatibility
+    # OpenCV writes an intermediate MP4; it is transcoded to browser-safe H.264 at completion.
     fourcc = cv2.VideoWriter_fourcc(*"mp4v")
     output_fps = min(settings.FRAME_SAMPLE_RATE, video_fps)
     video_writer = cv2.VideoWriter(
@@ -315,8 +355,9 @@ async def process_video_task(job_id: str, video_path: str):
             persistence = PersistenceManager(session)
             closed_count = await persistence.finalize_video_processing(video_path)
 
-        # Close video writer
+        # Close video writer and finalize the MP4 for browser playback.
         video_writer.release()
+        output_path = make_browser_playable_mp4(output_path)
 
         processing_manager.update_job(
             job_id,

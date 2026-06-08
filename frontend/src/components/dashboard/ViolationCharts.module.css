@@ -30,7 +30,7 @@
 .tooltip {
   padding: 9px 12px;
   border-radius: 8px;
-  background: #ffffff;
+  background: var(--bg-panel-strong);
   border: 1px solid var(--border-color);
   box-shadow: var(--shadow-md);
   color: var(--text-primary);

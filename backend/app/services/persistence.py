@@ -25,6 +25,17 @@ def to_python_type(value):
     return value
 
 
+def to_json_safe(value):
+    """Recursively convert numpy values inside JSON-like structures."""
+    if isinstance(value, dict):
+        return {str(key): to_json_safe(item) for key, item in value.items()}
+    if isinstance(value, list):
+        return [to_json_safe(item) for item in value]
+    if isinstance(value, tuple):
+        return [to_json_safe(item) for item in value]
+    return to_python_type(value)
+
+
 class PersistenceManager:
     """Coordinates persistence of events and person records with deduplication."""
 
@@ -172,10 +183,34 @@ class PersistenceManager:
                 if not person_id.startswith("track_"):
                     await self.person_service.increment_event_counts(person_id, True)
 
-                # Broadcast event via WebSocket
+                event_payload = {
+                    "id": event.id,
+                    "person_id": person_id,
+                    "track_id": track_id,
+                    "timestamp": timestamp.isoformat(),
+                    "video_source": video_source,
+                    "frame_number": frame_number,
+                    "detected_ppe": to_json_safe(person.get("detected_ppe", [])),
+                    "missing_ppe": to_json_safe(stable_missing_ppe),
+                    "action_violations": to_json_safe(action_violation_names),
+                    "is_violation": True,
+                    "detection_confidence": to_json_safe(
+                        person.get("detection_confidence") or {}
+                    ),
+                    "snapshot_path": snapshot_path,
+                    "start_frame": frame_number,
+                    "end_frame": None,
+                    "end_timestamp": None,
+                    "duration_frames": 1,
+                    "is_ongoing": True,
+                }
+
+                # Broadcast the full event, not just a toast summary.
                 await ws_manager.broadcast(
                     {
-                        "type": "violation",
+                        "type": "event",
+                        "event_type": "violation",
+                        "data": event_payload,
                         "title": "New Safety Violation",
                         "message": f"Person {person_id} missing {', '.join(all_violations)}",
                         "timestamp": timestamp.isoformat(),

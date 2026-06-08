@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useRef, useState } from 'react';
 import { useWebSocket } from '@/hooks/useWebSocket';
 import Navbar from '@/components/layout/Navbar';
 import SummaryStats from '@/components/dashboard/SummaryStats';
@@ -10,6 +11,32 @@ import styles from './page.module.css';
 export default function Dashboard() {
   const { isConnected, lastEvent } = useWebSocket();
   const updateTrigger = lastEvent ? new Date(lastEvent.timestamp).getTime() : 0;
+  const videoWrapperRef = useRef<HTMLDivElement | null>(null);
+  const [eventPanelHeight, setEventPanelHeight] = useState<number | null>(null);
+
+  useEffect(() => {
+    const updatePanelHeight = () => {
+      const videoWrapper = videoWrapperRef.current;
+      if (!videoWrapper || window.innerWidth <= 1180) {
+        setEventPanelHeight(null);
+        return;
+      }
+
+      const nextHeight = Math.round(videoWrapper.getBoundingClientRect().height);
+      if (nextHeight > 0) setEventPanelHeight(nextHeight);
+    };
+
+    updatePanelHeight();
+
+    const resizeObserver = new ResizeObserver(updatePanelHeight);
+    if (videoWrapperRef.current) resizeObserver.observe(videoWrapperRef.current);
+
+    window.addEventListener('resize', updatePanelHeight);
+    return () => {
+      resizeObserver.disconnect();
+      window.removeEventListener('resize', updatePanelHeight);
+    };
+  }, []);
 
   return (
     <div className={styles.layout}>
@@ -43,13 +70,17 @@ export default function Dashboard() {
 
         <div className={styles.mainGrid}>
           <div className={styles.leftColumn}>
-            <div className={styles.videoWrapper}>
+            <div className={styles.videoWrapper} ref={videoWrapperRef}>
               <LiveVideo />
             </div>
           </div>
 
           <div className={styles.rightColumn}>
-            <EventFeed newEvent={lastEvent} />
+            <EventFeed
+              isConnected={isConnected}
+              newEvent={lastEvent}
+              panelHeight={eventPanelHeight}
+            />
           </div>
         </div>
       </main>

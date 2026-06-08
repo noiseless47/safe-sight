@@ -19,8 +19,8 @@
 .card:empty {
   min-height: 120px;
   background:
-    linear-gradient(90deg, transparent 0%, rgba(219, 39, 119, 0.06) 45%, transparent 90%),
-    #ffffff;
+    linear-gradient(90deg, transparent 0%, rgba(244, 114, 182, 0.08) 45%, transparent 90%),
+    var(--bg-panel);
   background-size: 220% 100%;
   animation: shimmer 1.4s ease-in-out infinite;
 }

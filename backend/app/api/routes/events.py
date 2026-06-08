@@ -12,6 +12,7 @@ from ...models.event import ComplianceEvent
 class EventResponse(BaseModel):
     id: str
     person_id: Optional[str]
+    track_id: Optional[int] = None
     timestamp: datetime
     video_source: Optional[str]
     frame_number: int = 0
@@ -19,6 +20,8 @@ class EventResponse(BaseModel):
     missing_ppe: List[str]
     action_violations: List[str] = []  # Drinking/Eating violations
     is_violation: bool
+    detection_confidence: dict = {}
+    snapshot_path: Optional[str] = None
     # Event deduplication fields
     start_frame: Optional[int] = None
     end_frame: Optional[int] = None

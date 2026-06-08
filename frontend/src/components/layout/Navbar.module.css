@@ -3,10 +3,10 @@
   top: 0;
   z-index: 50;
   border-bottom: 1px solid var(--border-color);
-  background: rgba(255, 255, 255, 0.9);
+  background: rgba(13, 11, 17, 0.86);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
-  box-shadow: 0 1px 0 rgba(15, 23, 42, 0.02);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.02);
 }
 
 .inner {
@@ -96,7 +96,7 @@
 
 .brand:focus-visible,
 .navItem:focus-visible {
-  outline: 3px solid rgba(219, 39, 119, 0.18);
+  outline: 3px solid rgba(244, 114, 182, 0.18);
   outline-offset: 2px;
 }
 

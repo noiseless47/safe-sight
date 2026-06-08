@@ -63,7 +63,7 @@
   display: flex;
   align-items: center;
   gap: 9px;
-  background: #ffffff;
+  background: var(--bg-panel);
   border: 1px solid var(--border-color);
   box-shadow: var(--shadow-sm);
   color: var(--text-primary);
@@ -101,6 +101,10 @@
 .videoWrapper,
 .rightColumn {
   min-width: 0;
+}
+
+.rightColumn {
+  min-height: 0;
 }
 
 @media (max-width: 1180px) {

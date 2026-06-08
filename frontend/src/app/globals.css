@@ -15,31 +15,33 @@
 }
 
 :root {
-  --bg-primary: #ffffff;
-  --bg-secondary: #f8fafc;
-  --bg-panel: #ffffff;
-  --bg-panel-soft: #f9fafb;
-  --border-color: #e5e7eb;
-  --border-strong: #d1d5db;
-  --text-primary: #111827;
-  --text-secondary: #6b7280;
-  --text-muted: #9ca3af;
+  --bg-primary: #0d0b11;
+  --bg-secondary: #121016;
+  --bg-panel: #18141f;
+  --bg-panel-strong: #211a29;
+  --bg-panel-soft: #131018;
+  --border-color: #2d2635;
+  --border-strong: #44364f;
+  --text-primary: #f8fafc;
+  --text-secondary: #b8afc4;
+  --text-muted: #81778e;
 
-  --accent-pink: #db2777;
-  --accent-pink-soft: #fdf2f8;
-  --accent-violet: #7c3aed;
-  --accent-violet-soft: #f5f3ff;
-  --accent-gradient: linear-gradient(135deg, #db2777, #7c3aed);
+  --accent-pink: #f472b6;
+  --accent-pink-strong: #db2777;
+  --accent-pink-soft: rgba(244, 114, 182, 0.14);
+  --accent-violet: #a78bfa;
+  --accent-violet-soft: rgba(167, 139, 250, 0.14);
+  --accent-gradient: linear-gradient(135deg, #e11d7a, #7c3aed);
 
-  --status-safe: #059669;
-  --status-safe-soft: #ecfdf5;
-  --status-warning: #d97706;
-  --status-warning-soft: #fffbeb;
-  --status-danger: #dc2626;
-  --status-danger-soft: #fef2f2;
+  --status-safe: #34d399;
+  --status-safe-soft: rgba(52, 211, 153, 0.14);
+  --status-warning: #fbbf24;
+  --status-warning-soft: rgba(251, 191, 36, 0.14);
+  --status-danger: #fb7185;
+  --status-danger-soft: rgba(251, 113, 133, 0.14);
 
-  --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.05);
-  --shadow-md: 0 12px 30px rgba(15, 23, 42, 0.08);
+  --shadow-sm: 0 12px 32px rgba(0, 0, 0, 0.28);
+  --shadow-md: 0 18px 42px rgba(0, 0, 0, 0.36);
   --font-sans: "DM Sans", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   --font-display: "DM Sans", system-ui, sans-serif;
 }
@@ -60,7 +62,7 @@ body {
 
 body {
   background:
-    linear-gradient(180deg, #ffffff 0%, #f8fafc 42%, #f3f4f6 100%);
+    linear-gradient(180deg, #0d0b11 0%, #121016 48%, #0b0a0f 100%);
   color: var(--text-primary);
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
@@ -73,16 +75,16 @@ body {
 }
 
 ::-webkit-scrollbar-track {
-  background: #f3f4f6;
+  background: #120f17;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #d1d5db;
+  background: #44364f;
   border-radius: 999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #9ca3af;
+  background: #6b5a78;
 }
 
 .glass-panel {

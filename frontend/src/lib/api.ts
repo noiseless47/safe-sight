@@ -37,6 +37,7 @@ export interface StreamStatus {
 export interface ComplianceEvent {
   id: string;
   person_id?: string;
+  track_id?: number;
   timestamp: string;
   video_source?: string;
   frame_number: number;
@@ -44,6 +45,13 @@ export interface ComplianceEvent {
   missing_ppe: string[];
   action_violations: string[];
   is_violation: boolean;
+  detection_confidence?: Record<string, unknown>;
+  snapshot_path?: string;
+  start_frame?: number;
+  end_frame?: number;
+  end_timestamp?: string;
+  duration_frames?: number;
+  is_ongoing?: boolean;
 }
 
 export interface VideoAsset {
@@ -144,6 +152,6 @@ export function rawVideoUrl(videoPath: string): string {
   return `${API_BASE_URL}/stream/videos/raw?video_path=${encodeURIComponent(videoPath)}`;
 }
 
-export function processedVideoStreamUrl(jobId: string): string {
-  return `${API_BASE_URL}/stream/processed/${jobId}/stream`;
+export function processedVideoUrl(jobId: string): string {
+  return `${API_BASE_URL}/stream/processed/${jobId}`;
 }

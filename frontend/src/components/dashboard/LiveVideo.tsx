@@ -1,16 +1,17 @@
 "use client";
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   fetchProcessingJob,
   fetchVideos,
-  processedVideoStreamUrl,
+  processedVideoUrl,
   rawVideoUrl,
   startVideoProcessing,
   VIDEO_STREAM_URL,
   ProcessingJob,
   VideoAsset,
 } from '@/lib/api';
+import MediaPlayer from './MediaPlayer';
 import styles from './LiveVideo.module.css';
 
 function formatError(error: unknown) {
@@ -35,9 +36,23 @@ function isPpeAnalysisVideo(video: VideoAsset) {
 }
 
 function formatVideoLabel(video: VideoAsset) {
-  const folder = video.relative_path.split(/[\\/]/).slice(-2, -1)[0];
-  const cleanFilename = video.filename.replace(/_/g, ' ');
-  return folder ? `${cleanFilename} (${folder})` : cleanFilename;
+  const stem = video.filename.replace(/\.[^.]+$/, '').replace(/^\d+[_\-\s]*/, '');
+  return stem
+    .split(/[_\-\s]+/)
+    .filter(Boolean)
+    .map((token) => {
+      const upperToken = token.toUpperCase();
+      if (upperToken === 'PPE' || upperToken === 'CCTV') return upperToken;
+      return token.charAt(0).toUpperCase() + token.slice(1);
+    })
+    .join(' ');
+}
+
+function videoPriority(video: VideoAsset) {
+  const filename = video.filename.toLowerCase();
+  const orderMatch = filename.match(/^(\d+)/);
+  if (orderMatch) return Number(orderMatch[1]);
+  return 99;
 }
 
 export default function LiveVideo() {
@@ -50,6 +65,8 @@ export default function LiveVideo() {
   const [starting, setStarting] = useState(false);
   const [actionError, setActionError] = useState('');
   const [notice, setNotice] = useState('');
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -60,14 +77,14 @@ export default function LiveVideo() {
         if (!active) return;
 
         const ppeVideos = data.videos.filter(isPpeAnalysisVideo);
-        const selectableVideos = ppeVideos.length > 0 ? ppeVideos : data.videos;
+        const selectableVideos = [...(ppeVideos.length > 0 ? ppeVideos : data.videos)].sort(
+          (first, second) =>
+            videoPriority(first) - videoPriority(second) ||
+            formatVideoLabel(first).localeCompare(formatVideoLabel(second)),
+        );
 
         setVideos(selectableVideos);
-        const preferred =
-          selectableVideos.find((video) => video.filename.toLowerCase().includes('part1')) ??
-          selectableVideos.find((video) => video.display_name.toLowerCase().includes('ppe_video')) ??
-          selectableVideos.find((video) => video.display_name.toLowerCase().includes('ppe_red_zone')) ??
-          selectableVideos[0];
+        const preferred = selectableVideos[0];
         if (preferred) setSelectedPath(preferred.path);
       } catch (error) {
         console.error(error);
@@ -108,6 +125,33 @@ export default function LiveVideo() {
     };
   }, [job?.id, job?.status]);
 
+  useEffect(() => {
+    if (!dropdownOpen) return;
+
+    function handlePointerDown(event: PointerEvent) {
+      if (!dropdownRef.current?.contains(event.target as Node)) {
+        setDropdownOpen(false);
+      }
+    }
+
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === 'Escape') setDropdownOpen(false);
+    }
+
+    document.addEventListener('pointerdown', handlePointerDown);
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('pointerdown', handlePointerDown);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [dropdownOpen]);
+
+  useEffect(() => {
+    if (job?.status === 'completed' && job.output_video) {
+      setHasError(false);
+    }
+  }, [job?.id, job?.output_video, job?.status]);
+
   const selectedVideo = useMemo(
     () => videos.find((video) => video.path === selectedPath) ?? null,
     [selectedPath, videos],
@@ -116,6 +160,7 @@ export default function LiveVideo() {
   const isProcessing = job?.status === 'pending' || job?.status === 'processing';
   const isRunDisabled =
     mode !== 'validation' || loadingVideos || !selectedVideo || isProcessing || starting;
+  const isDropdownDisabled = loadingVideos || videos.length === 0 || isProcessing || starting;
   const jobProgress = progressOf(job);
 
   const handleProcess = async () => {
@@ -144,13 +189,24 @@ export default function LiveVideo() {
     setHasError(false);
     setActionError('');
     setNotice('');
+    setDropdownOpen(false);
   };
 
+  const handleVideoSelect = (video: VideoAsset) => {
+    setSelectedPath(video.path);
+    setJob(null);
+    setActionError('');
+    setNotice('');
+    setHasError(false);
+    setDropdownOpen(false);
+  };
+
+  const isProcessedOutput = mode === 'validation' && job?.status === 'completed' && Boolean(job.output_video);
   const videoSrc =
     mode === 'live'
       ? VIDEO_STREAM_URL
-      : job?.status === 'completed' && job.output_video
-        ? processedVideoStreamUrl(job.id)
+      : isProcessedOutput
+        ? processedVideoUrl(job.id)
         : selectedVideo
           ? rawVideoUrl(selectedVideo.path)
           : '';
@@ -225,30 +281,53 @@ export default function LiveVideo() {
         {mode === 'validation' ? (
           <>
             <div className={styles.datasetRow}>
-              <label className={styles.fieldGroup}>
-                <span>PPE validation video</span>
-                <select
-                  value={selectedPath}
-                  disabled={loadingVideos || videos.length === 0 || isProcessing || starting}
-                  onChange={(event) => {
-                    setSelectedPath(event.target.value);
-                    setJob(null);
-                    setActionError('');
-                    setNotice('');
-                    setHasError(false);
-                  }}
-                >
-                  {videos.length === 0 ? (
-                    <option value="">No videos available</option>
-                  ) : (
-                    videos.map((video) => (
-                      <option key={video.path} value={video.path}>
-                        {formatVideoLabel(video)} - {video.size_mb} MB
-                      </option>
-                    ))
-                  )}
-                </select>
-              </label>
+              <div className={styles.fieldGroup}>
+                <span className={styles.fieldLabel}>PPE validation video</span>
+                <div className={styles.dropdown} ref={dropdownRef}>
+                  <button
+                    type="button"
+                    className={styles.dropdownTrigger}
+                    disabled={isDropdownDisabled}
+                    aria-haspopup="listbox"
+                    aria-expanded={dropdownOpen}
+                    onClick={() => setDropdownOpen((open) => !open)}
+                  >
+                    <span className={styles.dropdownMain}>
+                      {selectedVideo ? formatVideoLabel(selectedVideo) : 'No videos available'}
+                    </span>
+                    <span className={styles.dropdownMeta}>
+                      {selectedVideo ? `${selectedVideo.size_mb} MB` : 'Waiting for backend'}
+                    </span>
+                    <svg viewBox="0 0 20 20" aria-hidden="true" className={styles.chevron}>
+                      <path d="M5 7.5 10 12.5 15 7.5" />
+                    </svg>
+                  </button>
+
+                  {dropdownOpen ? (
+                    <div className={styles.dropdownMenu} role="listbox" aria-label="PPE validation videos">
+                      {videos.map((video) => {
+                        const isSelected = video.path === selectedPath;
+                        return (
+                          <button
+                            key={video.path}
+                            type="button"
+                            className={`${styles.dropdownOption} ${isSelected ? styles.selectedOption : ''}`}
+                            role="option"
+                            aria-selected={isSelected}
+                            onClick={() => handleVideoSelect(video)}
+                          >
+                            <span>{formatVideoLabel(video)}</span>
+                            <strong>{video.size_mb} MB</strong>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  ) : null}
+                </div>
+                {videos.length === 0 && !loadingVideos ? (
+                  <span className={styles.fieldHint}>No validation videos found</span>
+                ) : null}
+              </div>
 
               <button
                 type="button"
@@ -276,44 +355,18 @@ export default function LiveVideo() {
         )}
       </div>
 
-      <div className={styles.videoStage}>
-        {!hasError && videoSrc ? (
-          mode === 'validation' && !(job?.status === 'completed' && job.output_video) ? (
-            <video
-              key={videoSrc}
-              src={videoSrc}
-              className={styles.videoFeed}
-              controls
-              muted
-              playsInline
-              onError={() => setHasError(true)}
-            />
-          ) : (
-            <>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                key={videoSrc}
-                src={videoSrc}
-                alt={mode === 'live' ? 'Live camera feed' : 'Processed validation feed'}
-                className={styles.videoFeed}
-                onError={() => setHasError(true)}
-              />
-            </>
-          )
-        ) : (
-          <div className={styles.offlineMessage}>
-            <svg className={styles.offlineIcon} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M2 2l20 20"></path><path d="M15 15a4 4 0 01-5.8-5.8"></path><path d="M12 12v.01"></path><path d="M10 5.4a4 4 0 015.6 5.6"></path><path d="M8 8a2 2 0 00-2 2v4a2 2 0 002 2h8a2 2 0 002-2v-4a2 2 0 00-2-2"></path>
-            </svg>
-            <p>{mode === 'live' ? 'Camera feed offline' : 'Video unavailable'}</p>
-          </div>
-        )}
-
-        <div className={styles.overlay}>
-          {mode === 'live' ? <div className={styles.recDot}></div> : null}
-          {mode === 'live' ? 'LIVE' : job?.status === 'completed' && job.output_video ? 'PROCESSED' : 'DATASET'}
-        </div>
-      </div>
+      <MediaPlayer
+        src={hasError ? '' : videoSrc}
+        kind={mode === 'live' ? 'image' : 'video'}
+        label={mode === 'live' ? 'LIVE' : isProcessedOutput ? 'PROCESSED' : 'DATASET'}
+        alt={mode === 'live' ? 'Live camera feed' : 'PPE validation video'}
+        isLive={mode === 'live'}
+        isProcessed={isProcessedOutput}
+        autoPlay={isProcessedOutput}
+        muted
+        errorText={mode === 'live' ? 'Camera feed offline' : 'Video unavailable'}
+        onError={() => setHasError(true)}
+      />
     </div>
   );
 }
